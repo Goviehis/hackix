@@ -11,7 +11,7 @@ use crate::{
     tabs
 };
 
-pub fn draw(frame: &mut Frame, app: &App) {
+pub fn draw(frame: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Length(20), Constraint::Min(1)])
@@ -30,7 +30,7 @@ pub fn draw(frame: &mut Frame, app: &App) {
     frame.render_stateful_widget(menu, chunks[0], &mut list_state);
 
     match app.active_tab {
-        ActiveTab::Console => tabs::console::draw(frame, chunks[1], &app.console),
+        ActiveTab::Console => tabs::console::draw(frame, chunks[1], &mut app.console),
         ActiveTab::Stats => tabs::stats::draw(frame, chunks[1]),
         ActiveTab::Shop =>tabs::shop::draw(frame, chunks[1]),
         ActiveTab::Settings => tabs::settings::draw(frame, chunks[1])

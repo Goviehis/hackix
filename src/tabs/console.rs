@@ -2,13 +2,17 @@ use ratatui::{Frame, layout::{Constraint, Direction, Layout, Rect}, widgets::{Bl
 
 use crate::app::ConsoleState;
 
-pub fn draw(frame: &mut Frame, area: Rect, console: &ConsoleState) {
+pub fn draw(frame: &mut Frame, area: Rect, console: &mut ConsoleState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Min(1), Constraint::Length(3)])
         .split(area);
 
-    let history_text = console.get_history().join("\n");
+    let visible_history = chunks[0].height.saturating_sub(2);
+    console.last_visible_height = visible_history;
+
+    let history_text = console.visible_history(visible_history as usize).join("\n");
+
     let history = Paragraph::new(history_text)
         .block(Block::default().borders(Borders::ALL).title("Console"))
         .wrap(Wrap { trim: false });

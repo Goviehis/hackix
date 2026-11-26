@@ -12,12 +12,13 @@ impl App {
             console: ConsoleState {
                 history: vec!["NETRUNNER v0.1 IS READY".to_string(), "type 'help' for command list".to_string()],
                 input: String::new(),
-                scroll: 0
+                scroll: 0,
+                last_visible_height: 0
             }
         }
     }
 }
-
+#[derive(PartialEq)]
 pub enum ActiveTab {
     Console,
     Stats,
@@ -39,7 +40,8 @@ impl ActiveTab {
 pub struct ConsoleState {
     history: Vec<String>,
     input: String,
-    pub scroll: u16
+    scroll: u16,
+    pub last_visible_height: u16
 }
 impl ConsoleState {
     pub fn push_input(&mut self, c: char) {
@@ -61,10 +63,6 @@ impl ConsoleState {
         &self.input
     }
 
-    pub fn get_history(&self) -> &Vec<String> {
-        &self.history
-    }
-
     pub fn enter(&mut self) -> String {
         let cmd = std::mem::take(&mut self.input);
 
@@ -74,5 +72,29 @@ impl ConsoleState {
 
     pub fn clear(&mut self) {
         self.history.clear();
+    }
+    
+    pub fn scroll_up(&mut self) {
+        let max_scroll = self.history.len().saturating_sub(self.last_visible_height as usize);
+
+        let temp_scroll = self.scroll.saturating_add(1);
+        self.scroll = max_scroll.min(temp_scroll as usize) as u16;
+    }
+
+    pub fn scroll_down(&mut self) {
+        self.scroll = self.scroll.saturating_sub(1);
+    }
+
+    pub fn visible_history(&self, visible_height: usize) -> Vec<&str> {
+        let len = self.history.len();
+
+        if len <= visible_height {
+            return self.history.iter().map(|line| line.as_str()).collect()
+        }
+
+        let end = len.saturating_sub(self.scroll as usize);
+        let start = end.saturating_sub(visible_height);
+
+        self.history[start..end].iter().map(|line| line.as_str()).collect()
     }
 }
